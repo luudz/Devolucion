@@ -1,0 +1,17 @@
+[
+	{ "sku":"987456" , "product":"Conchas", "refund" : 0, "price": 15 }, 
+	{ "sku":"321654" , "product":"Mantecadas", "refund" : 0, "price": 10 },
+    { "sku":"963852" , "product":"Donas", "refund" : 0, "price": 6 },
+    { "sku":"789123" , "product":"Pan integral", "refund" : 0, "price": 9 },
+    { "sku":"582693" , "product":"Pan tostado", "refund" : 0, "price": 8 },
+    { "sku":"456789" , "product":"Panqué", "refund" : 0, "price": 14 },
+    { "sku":"791346" , "product":"Polvorón", "refund" : 0, "price": 11 },
+    { "sku":"172839" , "product":"Pan blanco", "refund" : 0, "price": 4 },
+    { "sku":"895623" , "product":"Panqué marmól", "refund" : 0, "price": 26 },
+    { "sku":"415263" , "product":"Panqué de nuez", "refund" : 0, "price": 36 },
+    { "sku":"159753" , "product":"Panqué de chocolate", "refund" : 0, "price": 31 },
+    { "sku":"493768" , "product":"Orejas", "refund" : 0, "price": 19 },
+    { "sku":"761943" , "product":"Conchas de chocolate", "refund" : 0, "price": 32 },
+    { "sku":"987312" , "product":"Cuernitos", "refund" : 0, "price": 16 },
+]
+
