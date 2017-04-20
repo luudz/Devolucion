@@ -24,7 +24,7 @@ class Confirmation extends Component{
   	}
 
   	//Renderiza la lista de de productos del cliente correspondiente
-	renderProductList(products, sectionId, rowId){
+	renderProductList(products, rowId){
 	    return(
 	      	<View style = {{flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
 		        <Text style = {styles.clientText}>{products.sku}</Text>
@@ -49,8 +49,8 @@ class Confirmation extends Component{
 				<HeaderListView/>
 				<ListView
 			        dataSource={this.passProps.dataSource}
-			        renderRow={(products, sectionId, rowId) => this.renderProductList(products, sectionId, rowId)}
-			        renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}
+			        renderRow={(products, rowId) => this.renderProductList(products, rowId)}
+			        renderSeparator={(rowId) => <View key={rowId} style={styles.separator} />}
 			    />
 			    <TouchableHighlight style = {styles.buttonCancel} onPress={(this.onCancel.bind(this))}>
 		        	<Image resizeMode = {Image.resizeMode.contain} style = {styles.imageCancel} source={require('../src/images/cancel.png')}/>
@@ -69,7 +69,7 @@ class Confirmation extends Component{
 		this.props.navigator.resetTo({
 			title: 'Success',
 			name: 'Success',
-			passProps: {clients: this.passProps.clients, client: this.passProps.client, count: this.passProps.count, total: this.passProps.total}
+			passProps: {clients: this.passProps.clients, client: this.passProps.client, count: this.passProps.count}
 		});
 		//si falla: muestra mensaje de error
 	}
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
 		color: 'white',
 	},
 	button: {
-		height: 60,
+		height: 40,
 		marginTop: 20,
 		alignItems: 'stretch',
 		backgroundColor: '#0076B7',
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
 	},
 	buttonText: {
 		flex: 1,
-		margin:15,
+		margin:5,
 		color: 'white',
 		textAlign: 'center',
 		fontSize: 20,

@@ -4,7 +4,18 @@
 //***************************************************************************************//
 
 import React, {Component} from 'react';
-import { View, Text, Image, TouchableHighlight, StyleSheet, AsyncStorage, ListView, TextInput, Alert, RefreshControl } from 'react-native';
+import { 
+	View, 
+	Text, 
+	Image, 
+	TouchableHighlight, 
+	StyleSheet, 
+	AsyncStorage, 
+	ListView, 
+	TextInput, 
+	Alert, 
+	RefreshControl 
+} from 'react-native';
 
 import HeaderListView from '../src/components/HeaderListView'
 
@@ -15,12 +26,11 @@ class ClientDetail extends Component{
 	
 	constructor(props){
 	    super(props);
-		var total = 0; //Total en pesos del valor de la devolución
+		// var total = 0; //Total en pesos del valor de la devolución
 	    this.passProps = this.props.route.passProps
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 	    this.state = {
 		    route: '',
-		    refund: 0,
 		    dataSource: ds.cloneWithRows(this.passProps.client.products),
 		    total: 0,
 	    };
@@ -33,14 +43,14 @@ class ClientDetail extends Component{
 	_loadInitialState =  async () => {
 		var route = await AsyncStorage.getItem('route');
 		  if (route !== null){
-		    // We have data!!
 		    this.setState({route: route});
-		    console.log(route);
+		    // console.log(route);
 		}
 	}
 
 	//Renderiza la lista de de productos del cliente correspondiente
 	renderProductList(products, rowId){
+		console.log("renderProductList");
 	    return(
 	      	<View style = {{flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
 		        <Text style = {styles.clientText}>{products.sku}</Text>
@@ -48,8 +58,8 @@ class ClientDetail extends Component{
     			<TextInput style = {styles.textInput}  
   					keyboardType = 'numeric'
     				placeholder = '0' 
-    				onChangeText={(text) => this.saveRefund(rowId,text)}/>
-    			<TouchableHighlight style = {{alignItems: 'center'}} onPress={() => this.onDelete(rowId,products.product)}>
+    				onChangeText={(text) => this.saveRefund(products,text)}/>
+    			<TouchableHighlight style = {{alignItems: 'center'}} onPress={() => this.onDelete(rowId,products)}>
 					<Image style = {styles.clientImage} resizeMode = {Image.resizeMode.contain} source={require('../src/images/delete.png')}/>
 				</TouchableHighlight>
 		    </View>
@@ -58,39 +68,41 @@ class ClientDetail extends Component{
 
 	//VISTA//
 	render (){
+		// console.log("ClientDetail")
 		return(
 			<View style={styles.page}>
 				<View style={styles.header}>
 					<Text style = {styles.textHeader}>Detalle Cliente</Text>
         			<Image style = {styles.logo} resizeMode = {Image.resizeMode.center} source={require('../src/images/grupobimbo.png')}/>
 				</View>
-				<View style = {styles.container}>
-	        		<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/person.png')}/>
-					<Text style = {styles.textContain} >{this.passProps.client.name}</Text>
-				</View>
-				<View style = {styles.container}>
-					<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/route.png')}/>
-					<Text style = {styles.textContain} >{this.state.route}</Text>
+				<View style = {{flexDirection: 'row'}}>
+					<View style = {{flex: 1}}>
+						<View style = {styles.container}>
+			        		<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/person.png')}/>
+							<Text style = {styles.textContain} >{this.passProps.client.name}</Text>
+						</View>
+						<View style = {styles.container}>
+							<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/route.png')}/>
+							<Text style = {styles.textContain} >{this.state.route}</Text>
+						</View>
+					</View>
+					<TouchableHighlight style = {{justifyContent: 'center'}} onPress={(this.onExit.bind(this))}> 
+	        			<Image style = {styles.imageExit} resizeMode = {Image.resizeMode.center} source={require('../src/images/exit.png')}/>
+					</TouchableHighlight>
 				</View>
 				<HeaderListView/>
 				<ListView 
 			        dataSource={this.state.dataSource}
 			        renderRow={(products, rowId) => this.renderProductList(products, rowId)}
-			        renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}
+			        renderSeparator={(rowId) => <View key={rowId} style={styles.separator} />}
 			    />
-				<TouchableHighlight style = {{alignItems: 'center'}} onPress={(this.onAdd.bind(this))}>
+				<TouchableHighlight style = {{alignItems: 'center',height: 40, justifyContent:'center'}} onPress={(this.onAdd.bind(this))}>
 					<Image resizeMode = {Image.resizeMode.center} source={require('../src/images/add.png')}/>
 				</TouchableHighlight>
-				<View style = {{flexDirection: 'row', justifyContent: 'center', alignItems: 'stretch'}}>
+				<View style = {{flexDirection: 'row', justifyContent: 'center', alignItems: 'stretch', marginBottom:10}}>
 					<Text style = {styles.text}>Total $ </Text>
 					<Text style = {styles.text}>{this.state.total}</Text>
 				</View>
-				<TouchableHighlight onPress={(this.onExit.bind(this))}> 
-					<View style={styles.containerExit}>
-						<Text style = {styles.textExit} >Salir</Text>
-	        			<Image style = {styles.imageExit} resizeMode = {Image.resizeMode.center} source={require('../src/images/exit.png')}/>
-					</View>
-				</TouchableHighlight>
 				<TouchableHighlight style = {styles.button} onPress={(this.onContinue.bind(this))}>
 		        	<Text style = {styles.buttonText}>Continuar</Text>
 		      	</TouchableHighlight>
@@ -102,10 +114,11 @@ class ClientDetail extends Component{
 	onContinue(){
 		//Redirecciona al usuario a la pantalla de confirmación
 		//Almacenamiento temporal de los valores modificados
+		this.passProps.clients.refund = this.state.total
 		this.props.navigator.push({
 			title: 'Confirmation',
 			name: 'Confirmation',
-			passProps: {clients: this.passProps.clients, client: this.passProps.client, count: this.passProps.count, total: this.state.total, dataSource: this.state.dataSource.cloneWithRows(this.passProps.client.products)}
+			passProps: {clients: this.passProps.clients, client: this.passProps.client, count: this.passProps.count, dataSource: this.state.dataSource.cloneWithRows(this.passProps.client.products)}
 		});
 	}
 
@@ -130,9 +143,12 @@ class ClientDetail extends Component{
   	}
 
   	makeDelete(rowID){
-  	  dataSource.splice(rowID,1);
+  	  let newProductList = this.passProps.client.products.slice()
+  	  // this.passProps.client.products.splice(rowID,1);
+  	  newProductList.splice(rowID,1);
+
   	  this.setState({
-  	  	dataSource: this.state.dataSource.cloneWithRows(dataSource)
+  	  	dataSource: this.state.dataSource.cloneWithRows(newProductList)
   	  })
   	  console.log(this.state.dataSource)
   	}
@@ -140,7 +156,7 @@ class ClientDetail extends Component{
   	onDelete(rowID, product){
   	  Alert.alert (
   	  	"BORRAR",
-  	  	"¿Deseas borrar " + product + "?",
+  	  	"¿Deseas borrar " + product.product + "?",
   	  	[
   	  		{text: 'Si', onPress: (this.makeDelete.bind(this))},
   	  		{text: 'No'}
@@ -148,12 +164,12 @@ class ClientDetail extends Component{
   	  );
   	}
 
-  	saveRefund(row, refund){
-	  	dataSource[row].refund = refund
-	  	
-	  	total += parseInt(dataSource[row].price) * parseInt(dataSource[row].refund);
+  	saveRefund(product, refund){
+	  	product.refund = refund
+	  	var total = 0;
+	  	total += parseInt(product.price) * parseInt(product.refund);
 	  	this.setState({total: total});
-	  	// this.passProps.client.refund = total;
+	  	this.passProps.client.refund = total;
   	}
 
 }
@@ -204,20 +220,21 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 	},
 	containerExit: {
+		flex: 1,
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'flex-end'
 	},
-	textExit: {
-		flex: 1,
-		textAlign: 'right',
-		fontSize: 20,
-	},
+	// textExit: {
+	// 	flex: 1,
+	// 	textAlign: 'right',
+	// 	fontSize: 20,
+	// },
 	imageExit: {
 		height: 40,
 	},
 	button: {
-		height: 60,
+		height: 40,
 		backgroundColor: '#0076B7',
 		justifyContent: 'center',
 		alignItems: 'stretch',
@@ -225,7 +242,7 @@ const styles = StyleSheet.create({
 	},
 	buttonText: {
 		flex:1,
-		margin: 15,
+		margin: 5,
 		color: 'white',
 		textAlign: 'center',
 		fontSize: 20,

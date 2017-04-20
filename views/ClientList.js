@@ -13,17 +13,16 @@ import {
 	ListView
 } from 'react-native';
 
-// import dataSource from '../src/data/clients'
-
 var count = 0;//corresponde al número de clientes de la ruta 
 
 class ClientList extends Component{
 
 	constructor(props) {
-		console.log("ClientList")
+		// console.log("ClientList")
 	    super(props);
 	    this.passProps = this.props.route.passProps
-	    console.log(this.passProps.data)
+		this.showClientList(this.passProps.data)
+	    // console.log(this.passProps.data)
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 	    this.state = {
 		    route: '',
@@ -37,16 +36,16 @@ class ClientList extends Component{
 	}
 
 	_loadInitialState =  async () => {
-		console.log("_loadInitialState")
+		// console.log("_loadInitialState")
 		var route = await AsyncStorage.getItem('route');
-		console.log(route)
+		// console.log(route)
 		if (route !== null){
 		    this.setState({route: route});
 		}
 	}
 
 	//Renderiza la lista de clientes como un Botón, para poder mostrar detalles al tocar cada cliente
-	renderClient(client, sectionId, rowId){
+	renderClient(client, rowId){
 	    return(
 	      <TouchableHighlight style = {{alignItems: 'stretch'}} onPress={() => this.onClientPressed(rowId, client)}>
 	      	<View style = {{flex: 1, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'stretch'}}>
@@ -59,9 +58,6 @@ class ClientList extends Component{
 
 	//VISTA//
 	render (){
-		console.log("data");
-		console.log(this.passProps.data);
-		this.showClientList(this.passProps.data)
 		return(
 			<View style={styles.page}>
 				<View style={styles.header}>
@@ -78,8 +74,8 @@ class ClientList extends Component{
 			    </View>
 				<ListView
 			        dataSource={this.state.dataSource}
-			        renderRow={(client, sectionId, rowId) => this.renderClient(client, sectionId, rowId)}
-			        renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}
+			        renderRow={(client, rowId) => this.renderClient(client, rowId)}
+			        renderSeparator={(rowId) => <View key={rowId} style={styles.separator} />}
 			    />
 			</View>
 		);
@@ -87,53 +83,26 @@ class ClientList extends Component{
 
 	//Cuenta cuántos clientes falta por registar
 	showClientList(data){
-		console.log("showClientList")
-		console.log(data.length)
-		// if (data.length == 1){
-		// 	this.props.navigator.replace({
-		//       name: 'ClientDetail',
-		//       title: 'ClientDetail',
-		//       passProps: {clients: this.passProps.data, client: selectedClient, count: 1}
-		//     });
-		// }else{
-		// 	var i = 0;
-		// 	for(i = 0; i<data.length; i++){
-		// 		if(data[i].status === "visitado"){
-		// 			data.splice(i,1);
-		// 			break;
-		// 		}
-		// 	}
-		// 	this.setState({
-		// 		dataSource: this.state.dataSource.cloneWithRows(data);
-		// 	})
-		// }
-		// count = this.state.dataSource.length;
-		// console.log("count", count)
-		// this.setState({count: count});
+		// console.log(data)
+		var i = 0;
+		count = data.length-1;
+		for(i = 0; i<data.length; i++){
+			if(data[i].status === "visitado"){
+				data.splice(i, 1);
+				break;
+			}
+		}
 	}
-
-	//Una vez que se ha registrado la devolución del cliente, se quita la lista de clientes
-	makeDelete(rowID){
-  	  dataSource.splice(rowID,1);
-  	  this.setState({
-  	  	dataSource: this.state.dataSource.cloneWithRows(dataSource)
-  	  })
-  	  console.log(this.state.dataSource)
-  	}
 
 	//Funcionalidad al tocar cada cliente
 	onClientPressed(rowId, client){
-	    console.log(client);
-	    this.validateCount()
-	    var selectedClient = client;
-	    // console.log(selectedClient);
-	    // this.makeDelete(rowId);
-
+		// console.log("onClientPressed")
+	 //    console.log(client);
 	    //Redirecciona al detalle del cliente
 	    this.props.navigator.push({
 	      name: 'ClientDetail',
 	      title: 'ClientDetail',
-	      passProps: {clients: this.passProps.data, client: selectedClient, count: count}
+	      passProps: {clients: this.passProps.data, client: client, count: count}
 	    });
 	}
 }

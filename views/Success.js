@@ -21,7 +21,6 @@ class Success extends Component{
 	  this.passProps = this.props.route.passProps;
 	  this.state = {
 		    route: '',
-		    total: 0,
 		}
 	}
 
@@ -41,6 +40,7 @@ class Success extends Component{
 
 	//Vista
 	render (){
+		console.log(this.passProps.count)
 		return(
 			<View style={styles.page}>
 				<View style = {{alignItems: 'center'}}>
@@ -57,7 +57,7 @@ class Success extends Component{
 				</View>
 				<View style = {styles.container}>
 					<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.center} source={require('../src/images/cash.png')}/>
-					<Text style = {styles.textContain}>{this.passProps.total}</Text>
+					<Text style = {styles.textContain}>{this.passProps.client.refund}</Text>
 				</View>
 				<TouchableHighlight style = {styles.button} secureTextEntry= {true} onPress={(this.onReady.bind(this))}>
 		        	<Text style = {styles.buttonText}>Listo</Text>
@@ -69,9 +69,10 @@ class Success extends Component{
 	//Funcionalidad del botón
 	onReady(){
 		//Se valida si existeste más de un cliente
-		if(this.passProps.count == 1){
+		if(this.passProps.count <= 1){
 			//Cuando sólo existe un cliente, o es el último cliente de la lista, 
 			//se regresa al usuario al login de la aplicación 
+			this.passProps.client.status = "visitado";
 			this.props.navigator.resetTo({
 		      name: 'Login',
 		      title: 'Login',
@@ -110,10 +111,10 @@ const styles = StyleSheet.create({
 	image: {
 		marginTop: 30,
 		marginBottom: 30,
-        height: 250,
+        height: 200,
     },
 	button: {
-		height: 60,
+		height: 40,
 		justifyContent: 'center',
 		alignItems: 'stretch',
 		backgroundColor: '#0076B7',
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
 	},
 	buttonText: {
 		flex: 1,
-		margin: 15,
+		margin: 5,
 		color: 'white',
 		textAlign: 'center',
 		fontSize: 20,
