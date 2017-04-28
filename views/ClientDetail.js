@@ -14,12 +14,12 @@ import {
 	ListView, 
 	TextInput, 
 	Alert, 
-	RefreshControl 
+	RefreshControl,
+	ScrollView, 
 } from 'react-native';
 
-import HeaderListView from '../src/components/HeaderListView'
-
 // import dataSource from '../src/data/products'
+var total = 0;
 
 class ClientDetail extends Component{
 
@@ -31,7 +31,8 @@ class ClientDetail extends Component{
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 	    this.state = {
 		    route: '',
-		    dataSource: ds.cloneWithRows(this.passProps.client.products),
+		    dataSource: ds.cloneWithRows(this.passProps.clients),
+		    // dataSource: ds.cloneWithRows(this.passProps.client.products),
 		    total: 0,
 	    };
   	}
@@ -52,16 +53,16 @@ class ClientDetail extends Component{
 	renderProductList(products, rowId){
 		console.log("renderProductList");
 	    return(
-	      	<View style = {{flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
-		        <Text style = {styles.clientText}>{products.sku}</Text>
-		        <Text style = {styles.clientText}>{products.product}</Text>
-    			<TextInput style = {styles.textInput}  
-  					keyboardType = 'numeric'
-    				placeholder = '0' 
-    				onChangeText={(text) => this.saveRefund(products,text)}/>
-    			<TouchableHighlight style = {{alignItems: 'center'}} onPress={() => this.onDelete(rowId,products)}>
-					<Image style = {styles.clientImage} resizeMode = {Image.resizeMode.contain} source={require('../src/images/delete.png')}/>
-				</TouchableHighlight>
+	      	<View style = {{flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'stretch', borderTopWidth: 0.5}}>
+		        <Text style = {{flex:1, fontSize: 15, textAlign: 'center', marginTop: 5, marginBottom: 5}}>{products.codigo_producto}</Text>
+		        <Text style = {{flex:2, fontSize: 15, marginTop: 5, marginBottom: 5}}>{products.descr_producto}</Text>
+    				<TextInput style = {styles.textInput}  
+  						keyboardType = 'numeric'
+    					placeholder = '0' 
+    					onChangeText={(text) => this.saveRefund(products,text)}/>
+    				<TouchableHighlight style = {{justifyContent: 'center', alignItems: 'center', width: 40,}} onPress={() => this.onDelete(rowId,products)}>
+						<Image style = {styles.clientImage} resizeMode = {Image.resizeMode.center} source={require('../src/images/delete.png')}/>
+					</TouchableHighlight>
 		    </View>
 	    )
 	}
@@ -72,30 +73,34 @@ class ClientDetail extends Component{
 		return(
 			<View style={styles.page}>
 				<View style={styles.header}>
-					<Text style = {styles.textHeader}>Detalle Cliente</Text>
+					<TouchableHighlight style = {{flex: 2, justifyContent: 'center', alignItems: 'flex-start'}} onPress={(this.onExit.bind(this))}>
+	        			<Image style = {{height: 40, width: 40}}resizeMode = {Image.resizeMode.center} source={require('../src/images/menu.png')}/>
+					</TouchableHighlight>
         			<Image style = {styles.logo} resizeMode = {Image.resizeMode.center} source={require('../src/images/grupobimbo.png')}/>
 				</View>
-				<View style = {{flexDirection: 'row'}}>
-					<View style = {{flex: 1}}>
-						<View style = {styles.container}>
-			        		<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/person.png')}/>
-							<Text style = {styles.textContain} >{this.passProps.client.name}</Text>
-						</View>
-						<View style = {styles.container}>
-							<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/route.png')}/>
-							<Text style = {styles.textContain} >{this.state.route}</Text>
-						</View>
+				<Text style = {styles.textTitle}>Detalle Cliente</Text>
+				<View>
+					<View style = {styles.container}>
+		        		<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/person.png')}/>
+						<Text style = {styles.textContain} >{this.passProps.clients[0].CLINOM}</Text>
 					</View>
-					<TouchableHighlight style = {{justifyContent: 'center'}} onPress={(this.onExit.bind(this))}> 
-	        			<Image style = {styles.imageExit} resizeMode = {Image.resizeMode.center} source={require('../src/images/exit.png')}/>
-					</TouchableHighlight>
+					<View style = {styles.container}>
+						<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/route.png')}/>
+						<Text style = {styles.textContain} >{this.state.route}</Text>
+					</View>
 				</View>
-				<HeaderListView/>
-				<ListView 
-			        dataSource={this.state.dataSource}
-			        renderRow={(products, rowId) => this.renderProductList(products, rowId)}
-			        renderSeparator={(rowId) => <View key={rowId} style={styles.separator} />}
-			    />
+				<View style = {styles.headerListView}>
+					<Text style={styles.textHeaderListView}>Código</Text>
+					<Text style={styles.textHeaderListView}>Producto</Text>
+					<Text style={{flex:2, fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: '#0076B7'}}>Devolución</Text>
+				</View>
+				<ScrollView>
+					<ListView 
+				        dataSource={this.state.dataSource}
+				        renderRow={(products, rowId) => this.renderProductList(products, rowId)}
+				        renderSeparator={(rowId) => <View key={rowId} style={styles.separator} />}
+				    />
+				</ScrollView>
 				<TouchableHighlight style = {{alignItems: 'center',height: 40, justifyContent:'center'}} onPress={(this.onAdd.bind(this))}>
 					<Image resizeMode = {Image.resizeMode.center} source={require('../src/images/add.png')}/>
 				</TouchableHighlight>
@@ -103,6 +108,11 @@ class ClientDetail extends Component{
 					<Text style = {styles.text}>Total $ </Text>
 					<Text style = {styles.text}>{this.state.total}</Text>
 				</View>
+				<View style = {{alignItems: 'center', flexDirection: 'row', justifyContent: 'center', paddingTop: 5}}>
+	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/views.png')}/>
+	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/currentView.png')}/>
+	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/views.png')}/>
+			    </View>
 				<TouchableHighlight style = {styles.button} onPress={(this.onContinue.bind(this))}>
 		        	<Text style = {styles.buttonText}>Continuar</Text>
 		      	</TouchableHighlight>
@@ -114,11 +124,12 @@ class ClientDetail extends Component{
 	onContinue(){
 		//Redirecciona al usuario a la pantalla de confirmación
 		//Almacenamiento temporal de los valores modificados
-		this.passProps.clients.refund = this.state.total
-		this.props.navigator.push({
+		// this.passProps.clients.refund = this.state.total
+		this.props.navigator.replace({
 			title: 'Confirmation',
 			name: 'Confirmation',
-			passProps: {clients: this.passProps.clients, client: this.passProps.client, count: this.passProps.count, dataSource: this.state.dataSource.cloneWithRows(this.passProps.client.products)}
+			passProps: {clients: this.passProps.clients, count: this.passProps.count, dataSource: this.state.dataSource.cloneWithRows(this.passProps.clients)}
+			// passProps: {clients: this.passProps.clients, client: this.passProps.client, count: this.passProps.count, dataSource: this.state.dataSource.cloneWithRows(this.passProps.client.products)}
 		});
 	}
 
@@ -143,7 +154,8 @@ class ClientDetail extends Component{
   	}
 
   	makeDelete(rowID){
-  	  let newProductList = this.passProps.client.products.slice()
+  	  // let newProductList = this.passProps.client.products.splice(rowID,1);
+  	  let newProductList = this.passProps.clients.slice()
   	  // this.passProps.client.products.splice(rowID,1);
   	  newProductList.splice(rowID,1);
 
@@ -156,7 +168,7 @@ class ClientDetail extends Component{
   	onDelete(rowID, product){
   	  Alert.alert (
   	  	"BORRAR",
-  	  	"¿Deseas borrar " + product.product + "?",
+  	  	"¿Deseas borrar " + product.descr_producto + "?",
   	  	[
   	  		{text: 'Si', onPress: (this.makeDelete.bind(this))},
   	  		{text: 'No'}
@@ -165,11 +177,12 @@ class ClientDetail extends Component{
   	}
 
   	saveRefund(product, refund){
-	  	product.refund = refund
-	  	var total = 0;
-	  	total += parseInt(product.price) * parseInt(product.refund);
-	  	this.setState({total: total});
-	  	this.passProps.client.refund = total;
+	  	product.devolucionPZ = refund
+	  	// product.refund = refund
+	  	total += parseFloat(product.precio_fresco) * parseFloat(product.devolucionPZ);
+	  	this.setState({total: total.toFixed(2)});
+	  	this.passProps.clients[0].dpvolicionPesos = total;
+	  	// this.passProps.client.refund = total;
   	}
 
 }
@@ -187,17 +200,18 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		backgroundColor: '#0076B7',
 		height: 70,
-		marginBottom: 10,
 	},
 	logo: {
 		flex: 1,
         height: 50,
     },
-	textHeader: {
-		fontSize: 30,
-		textAlign: 'center',
-		flex: 2,
-		color: 'white',
+	textTitle: {
+		fontSize: 25,
+		justifyContent: 'flex-start',
+		alignItems: 'center',
+		fontWeight: 'bold',
+		color: '#EF6C00',
+		marginLeft: 30,
 	},
 	text: {
 		flex: 1,
@@ -216,7 +230,7 @@ const styles = StyleSheet.create({
 	textContain: {
 		flex: 1,
 		color: "#000000",
-		fontSize: 20,
+		fontSize: 15,
 		fontWeight: 'bold',
 	},
 	containerExit: {
@@ -249,15 +263,31 @@ const styles = StyleSheet.create({
 	},
 	clientText: {
 		flex: 1,
-		fontSize: 20,
+		fontSize: 15,
 	},
 	clientImage:{
 		height: 20,
 	},
 	textInput: {
+		fontSize: 15,
+		textAlign: 'center',
+		justifyContent: 'center',
+		flex: 1,
+	},
+	headerListView: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		borderBottomWidth: 1.5,
+		borderColor: '#0076B7',
+	},
+	textHeaderListView: {
+		flex:1,
 		fontSize: 20,
-		alignItems: 'flex-end',
-	}
+		color: '#0076B7',
+		fontWeight: 'bold',
+		textAlign: 'center',
+  	},
 });
 
 module.exports = ClientDetail;

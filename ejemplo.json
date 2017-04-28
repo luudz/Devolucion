@@ -1,0 +1,58 @@
+{
+	"resultadosConsulta":[
+
+		{"clientes":[
+
+			{"CLICOD":"296144","CLINOM":"EX HIPER OSASCO SHOP - LJ 2066","estatusVisita":"0","devolicionPesos":"0","rows":[
+				
+				{"descr_producto":"PANETTONE FRUTAS CRISTALIZADAS 500G PUL","precio_fresco":"10.07","devolucionPZ":"0","codigo_producto":"3469"},
+
+				{"descr_producto":"PANETTONE GOTAS DE CHOCOLATE 500GPUL","precio_fresco":"10.07","devolucionPZ":"0","codigo_producto":"3470"},
+
+				{"descr_producto":"PANETTONE RECHEADO GRAMADO 550G NUT","precio_fresco":"14.6","devolucionPZ":"0","codigo_producto":"23859"},
+
+				{"descr_producto":"PANETTONE NUTRELLA GRAMADO 12X550G NUT","precio_fresco":"175.23","devolucionPZ":"0","codigo_producto":"23860"},
+
+				{"descr_producto":"CX CROC SAB BOTECO PICANHA C/ ALHO 1980G","precio_fresco":"41.8","devolucionPZ":"0","codigo_producto":"39521"},
+
+				{"descr_producto":"PÃO SUPREME CACAU E CEREAIS 600G NUT","precio_fresco":"6.39","devolucionPZ":"0","codigo_producto":"46886"},
+
+				{"descr_producto":"PANETTONE LAURATTONE FRUTAS LAURA 12PX40","precio_fresco":"66","devolucionPZ":"0","codigo_producto":"47291"},
+
+				{"descr_producto":"PANETTONE LAURATTONE G CHOC LAURA 12PX40","precio_fresco":"66","devolucionPZ":"0","codigo_producto":"47293"},
+
+				{"descr_producto":"PANETTONE LAURATTONE FRUTAS 400G","precio_fresco":"5.5","devolucionPZ":"0","codigo_producto":"49065"},
+
+				{"descr_producto":"PANETTONE LAURATTONE GOTAS CHOC. 400G","precio_fresco":"5.5","devolucionPZ":"0","codigo_producto":"49066"},
+
+				{"descr_producto":"PANETTONE FRUTAS 12X500G NUT","precio_fresco":"120.78","devolucionPZ":"0","codigo_producto":"49142"},
+
+				{"descr_producto":"PANETTONE GOTAS 12X500G NUT","precio_fresco":"120.78","devolucionPZ":"0","codigo_producto":"49143"},
+
+				{"descr_producto":"PANETTONE FRUTAS CRISTALIZADAS 12X500G P","precio_fresco":"120.78","devolucionPZ":"0","codigo_producto":"49144"},
+
+				{"descr_producto":"CX PANETTONE GOTAS DE CHOCOLATE 12X500GP","precio_fresco":"120.78","devolucionPZ":"0","codigo_producto":"49145"},
+
+				{"descr_producto":"PANETTONE FRUTAS CRISTALIZADAS 500G NUT","precio_fresco":"10.07","devolucionPZ":"0","codigo_producto":"49176"},
+
+				{"descr_producto":"PANETTONE GOTAS DE CHOC 500G NUT","precio_fresco":"10.07","devolucionPZ":"0","codigo_producto":"49177"}
+			]}
+		],
+		"metadata":[
+			{"nombre":"codigo_ruta","tipo":"S"},
+			{"nombre":"CLICOD","tipo":"S"},
+			{"nombre":"CLINOM","tipo":"S"},
+			{"nombre":"codigo_producto","tipo":"N"},
+			{"nombre":"descr_producto","tipo":"S"},
+			{"nombre":"precio_fresco","tipo":"M"},
+			{"nombre":"devolucionPZ","tipo":"N"},
+			{"nombre":"dpvolicionPesos","tipo":"M"},
+			{"nombre":"estatusVisita","tipo":"N"}
+		],
+		"semaforos":[],
+		"ceve":"13506",
+		"codigo_ruta":"5002"}
+	],
+	"success":true,
+	"responseMsg":"OK"
+}

@@ -6,7 +6,7 @@
 import React, {Component} from 'react';
 import {Text, TextInput, View, StyleSheet, TouchableHighlight, Alert, Picker} from 'react-native';
 
-import data from '../src/data/clients'
+import data from '../data/clients'
 const Item = Picker.Item;
 
 class AddProduct extends Component{

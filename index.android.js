@@ -37,12 +37,12 @@ var NavigatorMapper = {
 
 //Constantes de todas las vistas a las que se puede acceder desde el Navigator
 const Login = require ('./views/LoginView');
-const Settings = require ('./views/Settings');
 const ClientList = require ('./views/ClientList');
 const ClientDetail = require ('./views/ClientDetail');
 const Confirmation = require ('./views/Confirmation');
 const Success = require ('./views/Success');
-const AddProduct = require ('./views/AddProduct');
+const Settings = require ('./src/menus/Settings');
+const AddProduct = require ('./src/menus/AddProduct');
 
 
 export default class Devolucion extends Component {
@@ -76,7 +76,7 @@ export default class Devolucion extends Component {
           if (route.sceneConfig){
             return route.sceneConfig;
           }
-          return Navigator.SceneConfigs.FloatFromRight
+          return Navigator.SceneConfigs.FloatFromLeft
         }}
         navigationBar = {
           <Navigator.NavigationBar

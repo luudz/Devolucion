@@ -11,7 +11,8 @@ import {
 	Image, 
 	TouchableHighlight, 
 	StyleSheet, 
-	AsyncStorage 
+	AsyncStorage,
+	ScrollView 
 } from 'react-native';
 
 class Success extends Component{
@@ -43,22 +44,24 @@ class Success extends Component{
 		console.log(this.passProps.count)
 		return(
 			<View style={styles.page}>
-				<View style = {{alignItems: 'center'}}>
-					<Image style = {styles.image} resizeMode = {Image.resizeMode.contain} source={require('../src/images/success.png')}/>
-				</View>
-				<Text style = {styles.success}>Registro exitoso</Text>
-				<View style = {styles.container}>
-					<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.center} source={require('../src/images/route.png')}/>
-					<Text style = {styles.textContain}>{this.state.route}</Text>
-				</View>
-        		<View style = {styles.container}>
-	        		<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.center} source={require('../src/images/person.png')}/>
-					<Text style = {styles.textContain}>{this.passProps.client.name}</Text>
-				</View>
-				<View style = {styles.container}>
-					<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.center} source={require('../src/images/cash.png')}/>
-					<Text style = {styles.textContain}>{this.passProps.client.refund}</Text>
-				</View>
+				<ScrollView>
+					<View style = {{alignItems: 'center'}}>
+						<Image style = {styles.image} resizeMode = {Image.resizeMode.contain} source={require('../src/images/success.png')}/>
+					</View>
+					<Text style = {styles.success}>Registro exitoso</Text>
+					<View style = {styles.container}>
+						<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.center} source={require('../src/images/route.png')}/>
+						<Text style = {styles.textContain}>{this.state.route}</Text>
+					</View>
+	        		<View style = {styles.container}>
+		        		<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.center} source={require('../src/images/person.png')}/>
+						<Text style = {styles.textContain}>{this.passProps.clients[0].CLINOM}</Text>
+					</View>
+					<View style = {styles.container}>
+						<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.center} source={require('../src/images/cash.png')}/>
+						<Text style = {styles.textContain}>{this.passProps.clients[0].dpvolicionPesos}</Text>
+					</View>
+			    </ScrollView>
 				<TouchableHighlight style = {styles.button} secureTextEntry= {true} onPress={(this.onReady.bind(this))}>
 		        	<Text style = {styles.buttonText}>Listo</Text>
 		      	</TouchableHighlight>
@@ -72,7 +75,7 @@ class Success extends Component{
 		if(this.passProps.count <= 1){
 			//Cuando sólo existe un cliente, o es el último cliente de la lista, 
 			//se regresa al usuario al login de la aplicación 
-			this.passProps.client.status = "visitado";
+			// this.passProps.client.status = "visitado";
 			this.props.navigator.resetTo({
 		      name: 'Login',
 		      title: 'Login',
@@ -81,9 +84,9 @@ class Success extends Component{
 		}else{
 			//Cuandoo hay un cliente sin registrar en la lista, el usuario regresa a la 
 			//lista de clientes
-			this.passProps.client.status = "visitado";
+			// this.passProps.client.status = "visitado";
 			console.log("success");
-			console.log(this.passProps.client);
+			// console.log(this.passProps.client);
 			this.props.navigator.resetTo({
 				name: 'ClientList',
 				title: 'ClientList',
@@ -106,7 +109,7 @@ const styles = StyleSheet.create({
 		fontSize: 45,
 		fontWeight: 'bold', 
 		textAlign: 'center',
-		color: "#000000"
+		color: "#EF6C00"
 	},
 	image: {
 		marginTop: 30,

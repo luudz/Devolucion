@@ -18,17 +18,18 @@ import {
 	AsyncStorage,
 	Switch
 } from 'react-native';
-import CheckBox from 'react-native-checkbox';
 
+const base64 = require('base-64');
 const Item = Picker.Item;
-const data = require('../src/data/data');
+// const data = require('../src/data/data');
 
 class LoginView extends Component{
 	
 	constructor(props) {
 	    super(props);
 	    this.state = {
-		    CeVe: '',
+	    	dataSoruce: [],
+		    CeVe: '0',
 		    route: '',
 		    password: '',
 		};
@@ -47,13 +48,12 @@ class LoginView extends Component{
 	        		</View>
 	        		<View style = {{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
 		        		<Text style = {{flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 'bold'}}>Centro de ventas:</Text>
-						<Picker style={styles.picker} 
-							prompt="Selecciona Centro de Ventas" 
+						<Picker style={styles.picker}
 							selectedValue={this.state.CeVe}
-		            		onValueChange={(ceve) => {this.setState({CeVe: ceve});}}>
-				            <Item label="46981" value="46981" />
+		            		onValueChange={(ceve) => {this.setState({CeVe: ceve})}}>
+				            <Item label="Selecciona CeVe" value= "0"/>
 				            <Item label="78910" value="78910" />
-				            <Item label="98244" value="98244" />
+				            <Item label="13506" value="13506" />
 				            <Item label="36589" value="36589" />
 				            <Item label="98514" value="98514" />
 				            <Item label="78152" value="78152" />
@@ -92,50 +92,52 @@ class LoginView extends Component{
 			    </View>
 
 				<TouchableHighlight style = {styles.button} onPress={this.onLogin.bind(this)}>
-		        	<Text style = {styles.buttonText} >Entrar</Text>
+		        	<Text style = {styles.buttonText}>Entrar</Text>
 		      	</TouchableHighlight>
 			</View>
 		)
 	}
 
 	onLogin() {
-		// fetch('https://mywebsite.com/endpoint/', {
-		//   method: 'POST',
-		//   headers: {
-		//     'Accept': 'application/json',
-		//     'Content-Type': 'application/json',
-		//   },
-		//   body: JSON.stringify({
-		//     firstParam: 'yourValue',
-		//     secondParam: 'yourOtherValue',
-		//   })
-		// })
-			
-      if(!this.state.route || !this.state.password){
-      	Alert.alert("Error",
-      	"Debes llenar todos los campos"	
-      	);
-      }
-      else{
-	  	  if(this.state.route === data[0].route){
-	  		  // var route = this.state.route;
-		  	  // var password = this.state.password;
-		  	  // Alert.alert ("Sesión",
-		  	  // "Vas a iniciar sesión con la ruta: " + route	
-		  	  // );
-		  	  // console.log(data[1].clients);
-		  	  AsyncStorage.setItem('route', data[0].route);
-		  	  this.props.navigator.replace({
-		  	  	title: 'ClientList',
-		  	  	name: 'ClientList',
-		  	  	passProps: {data: data[0].clients}
-		  	  });
-	  	  }else{
-	  	  	Alert.alert ("Sesión",
-		  	  "Ruta incorrecta, intenta nuevamente"	
-		  	  );
-	  	  }
-	  }
+		console.log("onLogin")
+
+		if(!this.state.route || !this.state.password || !this.state.CeVe){
+			Alert.alert("Error",
+				"Debes llenar todos los campos"	
+			);
+		}else{
+			var data = 'ceve='+this.state.CeVe+'&FECHA=20160812&'+'RUTA='+this.state.route+'&'+'PASS='+this.state.password
+			console.log("data: "+data)
+			const URL = 'http://192.168.2.210:7001/MarinaWS/json/pc/app/ruta_cliente/get?' + data	
+			console.log("URL: "+URL);
+			console.log(base64.encode("SALES.FORCE:123qwe"));
+
+			let fetchData = {
+				method: 'GET',
+			    headers: {
+			    	'Authorization': "Basic U0FMRVMuRk9SQ0U6MTIzcXdl",
+					'Content-Type': 'application/json',
+			    },
+			}
+
+			fetch(URL, fetchData)
+			.then(function(response) {return response.json()})
+			.then((res) => {this.setState({dataSoruce: res}); console.log(this.state.dataSoruce);
+			  	if(res.success === true){
+			  		AsyncStorage.setItem('route', this.state.route);
+			  		this.props.navigator.replace({
+				  	  	title: 'ClientList',
+				  	  	name: 'ClientList',
+				  	  	passProps: {data: res.resultadosConsulta[0].rows}
+			  		})
+		  	  	}else{
+		  	 		Alert.alert ("ERROR",
+			  	  		res.responseMsg	
+			  		);
+		  	  	}
+			})
+			.done();
+		}
   	}
 
   	onSettings(){
