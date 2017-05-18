@@ -10,16 +10,40 @@ import {
 	Image, 
 	TouchableHighlight, 
 	Alert, 
-	StyleSheet, 
+	StyleSheet,
+	AsyncStorage, 
 	ListView, 
 } from 'react-native';
+
+import Icon from 'react-native-vector-icons/Ionicons';
+
+import Header from '../src/components/Header'
 
 class Confirmation extends Component{
 
 	constructor(props){
 	    super(props);
 	    this.passProps = this.props.route.passProps
+	    let total = this.passProps.clients[0].dpvolicionPesos === "0"  ? 0 : this.passProps.clients[0].dpvolicionPesos
+	    this.state = {
+		    route: '',
+		    success: '',
+		    total: total.toFixed(2),
+		    showDetail: false,
+		};
   	}
+
+  	componentDidMount(){
+		this._loadInitialState().done();
+	}
+
+	_loadInitialState =  async () => {
+		var route = await AsyncStorage.getItem('route');
+		  if (route !== null){
+		    this.setState({route: route});
+		    // console.log(route);
+		}
+	}
 
   	//Renderiza la lista de de productos del cliente correspondiente
 	renderProductList(products, rowId){
@@ -35,48 +59,153 @@ class Confirmation extends Component{
   	//VISTA//
 	render (){
 		return(
-			<View style={styles.page}>
-				<View style = {styles.header}>
-					<TouchableHighlight style = {{flex: 2, justifyContent: 'center', alignItems: 'flex-start'}}>
-	        			<Image style = {{height: 40, width: 40}}resizeMode = {Image.resizeMode.center} source={require('../src/images/menu.png')}/>
-					</TouchableHighlight>
-        			<Image style = {styles.logo} resizeMode = {Image.resizeMode.contain} source={require('../src/images/grupobimbo.png')}/>
+			<View style = {styles.page}>
+				<Header title = "Registro Devolución"/>
+				<View style = {styles.logoNTotal}>
+	    			<Image style = {styles.logo} resizeMode = {Image.resizeMode.contain} source={require('../src/images/grupobimbo.png')}/>
+	    			<View style = {styles.totalContainer}>
+	    				<Text style = {styles.totalText}>TOTAL DEVOLUCIÓN</Text>
+	    				<Text style = {[styles.totalText, styles.total]}>{"$ " + this.state.total}</Text>
+	    			</View>
 				</View>
-				<Text style = {styles.textTitle}>Registro devolución</Text>
-				<View style = {styles.container}>
-	        		<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.center} source={require('../src/images/person.png')}/>
-					<Text style = {styles.textContain}>{this.passProps.clients[0].CLINOM}</Text>
-				</View>
-				<View style = {styles.container}>
-						<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.center} source={require('../src/images/cash.png')}/>
-						<Text style = {styles.textContain}>{this.passProps.clients[0].dpvolicionPesos}</Text>
-					</View>
-				<View style = {styles.headerListView}>
-					<Text style={styles.textHeaderListView}>Código</Text>
-					<Text style={styles.textHeaderListView}>Producto</Text>
-					<Text style={{flex:2, fontSize: 20, fontWeight: 'bold', textAlign: 'right', color: '#0076B7', paddingRight: 10}}>Devolución</Text>
-				</View>
-				<ListView
-			        dataSource={this.passProps.dataSource}
-			        renderRow={(products, rowId) => this.renderProductList(products, rowId)}
-			        renderSeparator={(rowId) => <View key={rowId} style={styles.separator} />}
-			    />
-		      	<View style = {{alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginTop: 20}}>
-	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/views.png')}/>
-	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/views.png')}/>
-	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/currentView.png')}/>
-			    </View>
-				<TouchableHighlight style = {styles.button} onPress ={(this.onSave.bind(this))}>
-		        	<Text style = {styles.buttonText}>Guardar</Text>
+				<View style = {styles.clientNRouteContainer}>
+    				<Text style = {styles.clientNRouteText}>RUTA</Text>
+    				<Text style = {[styles.clientNRouteText, styles.clientNRoute]}>{this.state.route}</Text>
+    			</View>
+    			<View style = {styles.clientNRouteContainer}>
+    				<Text style = {styles.clientNRouteText}>CLIENTE</Text>
+    				<Text style = {[styles.clientNRouteText, styles.clientNRoute]}>{this.passProps.clients[0].CLINOM}</Text>
+    			</View>
+    			<TouchableHighlight style = {styles.detailButton} onPress ={(this.showDetail.bind(this))}>
+		        	<Text style = {styles.detailButtonText}>Ver Detalle</Text>
 		      	</TouchableHighlight>
+		      	{this.renderIf(this.state.showDetail,
+		      		<View style = {{flex: 1}}> 
+						<Text style = {styles.resum}>RESUMEN</Text>
+						<ListView
+					        dataSource={this.passProps.dataSource}
+					        renderRow={(products, rowId) => this.renderProductList(products, rowId)}
+					        renderSeparator={(rowId) => <View key={rowId} style={styles.separator} />}
+					    />
+					</View>
+				)}
+		      	<TouchableHighlight style = {[styles.detailButton, styles.backButton]} onPress ={(this.onBack.bind(this))}>
+		        	<Text style = {[styles.detailButtonText, styles.backButtonText]}>Regresar</Text>
+		      	</TouchableHighlight>
+		      	{this.renderIf(!this.state.showDetail,
+		      		<View style = {{flex: 1}}> 
+					</View>
+				)}
+				<TouchableHighlight style = {styles.goButton} onPress ={(this.onSave.bind(this))}>
+		        	<Text style = {styles.goButtonText}>Confirmar</Text>
+		      	</TouchableHighlight>
+		      	<View style = {styles.navState}>
+	              	<Icon name = "md-radio-button-off" size = {10} color = "#000" style = {styles.dot}/>
+	              	<Icon name = "md-radio-button-off" size = {10} color = "#000" style = {styles.dot}/>
+	        		<Icon name = "md-radio-button-on" size = {10} color = "#000" style = {styles.dot}/>
+	              	<Icon name = "md-radio-button-off" size = {10} color = "#000" style = {styles.dot}/>
+			    </View>
 			</View>
 		);
 	}
+
+	//*********************************//
+	renderIf(condition, content){
+		if(condition){
+			return content;
+		}else{
+			return null;
+		}
+	}
+	//*********************************//
+
+	showDetail(){
+		this.setState({showDetail: !this.state.showDetail})
+	}
+
+	sendInventory() {
+		// var data = 'ceve='+this.state.CeVe+'&FECHA=20160812&'+'RUTA='+this.state.route+'&'+'PASS='+this.state.password
+		// console.log("data: "+data)
+		const URL = 'http://192.168.2.210:7001/MarinaWS/json/pc/app/ruta_cliente/put?'// + data	
+		// console.log("URL: "+URL);
+		// console.log(base64.encode("SALES.FORCE:123qwe"));
+
+		let fetchData = {
+			method: 'GET',
+			headers: {
+		    	'Authorization': "Basic U0FMRVMuRk9SQ0U6MTIzcXdl",
+			    'Accept': 'application/json',
+			    'Content-Type': 'application/json',
+			  },
+		}
+
+		fetch(URL, fetchData)
+		.then(function(response) {console.log(response.json); return response.json()})
+		.then((res) => {
+		  	if(res.success === true){
+		  		this.props.navigator.resetTo({
+					title: 'Success',
+					name: 'Success',
+					passProps: {clients: this.passProps.clients, count: this.passProps.count}
+					// passProps: {clients: this.passProps.clients, client: this.passProps.client, count: this.passProps.count}
+				});
+	  	  	}else{
+  	  			Alert.alert("ERROR", res.responseMsg)
+	  	  	}
+		})
+		.done();
+  	}
+
+  	onBack(){
+  		this.props.navigator.resetTo({
+			title: 'ClientDetail',
+			name: 'ClientDetail',
+			passProps: {clients: this.passProps.clients, count: this.passProps.count}
+			// passProps: {clients: this.passProps.clients, client: this.passProps.client, count: this.passProps.count}
+		});
+  	}
+
+	sendData() {
+		// var data = 'ceve='+this.state.CeVe+'&FECHA=20160812&'+'RUTA='+this.state.route+'&'+'PASS='+this.state.password
+		// console.log("data: "+data)
+		const URL = 'http://192.168.2.210:7001/MarinaWS/json/pc/app/ruta_cliente/put?'
+		// console.log("URL: "+URL);
+		// console.log(base64.encode("SALES.FORCE:123qwe"));
+
+		let fetchData = {
+			// method: 'GET',
+			method: 'POST',
+			headers: {
+		    	'Authorization': "Basic U0FMRVMuRk9SQ0U6MTIzcXdl",
+			    'Accept': 'application/json',
+			    'Content-Type': 'application/json',
+			  },
+			  // body: JSON.stringify({
+			  //   "FECHA" : 'fecha',
+			  //   "codigo_ruta": 'yourOtherValue',
+			  //   "ITEMID": 'yourValue',
+			  //   "DEVPZ" : 'productsList',
+			  // })
+		}
+
+		fetch(URL, fetchData)
+		.then(function(response) {console.log(response.json); return response.json()})
+		.then((res) => {
+		  	if(res.success === "true"){
+		  		this.sendInventory();
+			}else{
+				Alert.alert("Error", res.responseMsg);
+			}
+		})
+		.done();
+  	}
 
 	//Funcionalidad botón 
 	onSave(){
 		//********Servicio de validación del registro******** 
 		//si es satisfactorio: redirecciona al usuario a la pantalla de registro exitoso
+		console.log("onSave");
+		// this.sendData();
 		this.props.navigator.resetTo({
 			title: 'Success',
 			name: 'Success',
@@ -100,84 +229,97 @@ class Confirmation extends Component{
 //*************HOJA DE ESTILOS***********
 const styles = StyleSheet.create({
 	page: {
-	    flex: 1,
-	    alignItems: 'stretch',
-	    justifyContent: 'space-between',
+		flex: 1,
+		backgroundColor: '#FFFFFF',
+		alignItems: 'stretch',
 	},
-	header:{
+	logoNTotal: {
 		flexDirection: 'row',
+		height: '11%',
 		alignItems: 'center',
-		justifyContent: 'center',
-		backgroundColor: '#0076B7',
-		marginBottom: 20,
-		height: 70
 	},
 	logo: {
 		flex: 1,
-        height: 70,
-    },
-	textTitle: {
-		fontSize: 25,
-		justifyContent: 'flex-start',
-		alignItems: 'center',
-		fontWeight: 'bold',
-		color: '#EF6C00',
-		marginLeft: 30,
-		marginBottom: 10,
+		height: '50%',
 	},
-	button: {
-		height: 40,
+	totalContainer: {
+		flex: 1,
 		alignItems: 'stretch',
-		backgroundColor: '#0076B7',
-		justifyContent: 'space-between',
-		borderRadius: 1
 	},
-	buttonText: {
+	clientNRouteContainer: {
+		height: '9%',
+		justifyContent: 'flex-start'
+	},
+	totalText: {
 		flex: 1,
-		margin:5,
-		color: 'white',
-		textAlign: 'center',
-		fontSize: 20,
-	},
-	container: {
-		flexDirection: 'row',
-		marginBottom: 20,
-	},
-	imageContain: {
-		height: 30,
-	},
-	textContain: {
-		flex: 1,
-		color: "#000000",
-		fontSize: 15,
-		fontWeight: 'bold',
-	},
-	clientText: {
-		flex: 1,
+		textAlign: 'right',
+		marginRight: '5%',
+		textAlignVertical: 'bottom',
+		color: 'gray',
 		fontSize: 15,
 	},
-	buttonCancel: {
-		alignItems: 'flex-end',
-		justifyContent: 'flex-end',
-		marginBottom: 20,
-		marginTop: 20,
-	},
-	imageCancel: {
-		height: 40,
-	},
-	headerListView: {
-	    flexDirection: 'row',
-	    alignItems: 'center',
-	    justifyContent: 'space-between',
-	    borderBottomWidth: 1.5,
-	    borderColor: '#0076B7',
-	},
-	textHeaderListView: {
-		flex:1,
-		fontSize: 20,
-		color: '#0076B7',
+	total : {
+		fontSize: 25,
 		fontWeight: 'bold',
+		textAlignVertical: 'top',
+	},
+	clientNRouteText: {
+		fontSize: 15,
+		textAlign: 'right',
+		marginRight: '5%',
+	},
+	clientNRoute: {
+		fontSize: 20,
+		fontWeight: 'bold'
+	},
+	detailButton: {
+		backgroundColor: '#EEEEEE',
+		height: '9%',
+	},
+	detailButtonText: {
+		flex: 1,
+		color: 'gray',
+		textAlignVertical: 'center',
 		textAlign: 'center',
+		fontSize: 23,
+	},
+	backButton: {
+		backgroundColor: '#8C8C8C',
+	},
+	backButtonText: {
+		color: '#FFFFFF'
+	},
+	goButton: {
+		height: '8%',
+		borderRadius: 4,
+		marginHorizontal: '5%',
+		marginTop: '2%',
+		backgroundColor: '#FD9325',
+	},
+	goButtonText: {
+		flex: 1,
+		color: '#FFFFFF',
+		textAlign: 'center',
+		textAlignVertical: 'center',
+		fontSize: 20,
+		fontWeight: 'bold',
+	},
+	navState: {
+		height: '1%',
+		alignItems: 'center', 
+		flexDirection: 'row', 
+		justifyContent: 'center',
+		marginBottom: '1%', 
+		marginTop: 5
+	},
+	dot: {
+		marginHorizontal: '2%',
+	},
+	resum: {
+		fontSize: 25,
+		fontWeight: 'bold',
+		paddingLeft: '5%',
+		borderBottomWidth: 1.5,
 	},
 });
 

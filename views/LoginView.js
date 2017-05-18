@@ -1,5 +1,6 @@
 //********************************************************************//
-// Incio de sesión. Para iniciar la sesión se valida el CeVe + Ruta y //
+// Incio de sesión. 												  //
+// Vista principal. Para iniciar la sesión se valida el CeVe + Ruta y //
 // una contraseña.                                                    //
 //********************************************************************//
 
@@ -19,9 +20,11 @@ import {
 	Switch
 } from 'react-native';
 
+import Icon from 'react-native-vector-icons/Ionicons';
+import Header from '../src/components/Header'
+
 const base64 = require('base-64');
 const Item = Picker.Item;
-// const data = require('../src/data/data');
 
 class LoginView extends Component{
 	
@@ -30,42 +33,90 @@ class LoginView extends Component{
 	    this.state = {
 	    	dataSoruce: [],
 		    CeVe: '0',
+		    ceves: ["Selecciona CeVe"],
 		    route: '',
 		    password: '',
+		    switchValue: null,
+		    isLogged: 'false',
+		    urlgs: '',
+		    usergs: '',
+		    passgs: '',
 		};
-	 }
+	}
 
+	makeCevesArray(ceves){
+		var i = 0;
+		for(i; i<ceves.length; i++){
+			this.state.ceves.push(String(ceves[i].codigoCeve))
+		}
+	}
+
+	componentDidMount(){
+		this._loadInitialState().done();
+	}
+
+	_loadInitialState =  async () => {
+		console.log("componentDidMount")
+		// console.log(base64.encode("SALES.FORCE:yrtfgreyg6764rtoy"));
+
+		fetch('http://smcsoasrv1.mx.gbimbo.com:7213/MarinaWS/ceve/list',{
+			method: 'GET',
+			headers: {
+				'Authorization': "Basic U0FMRVMuRk9SQ0U6eXJ0ZmdyZXlnNjc2NHJ0b3k=",
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+			},
+		})
+		.then((response) => response.json())
+		.then((res) => {
+			console.log(res.ceves)
+			this.makeCevesArray(res.ceves);
+			console.log(this.state.ceves);
+		})
+
+		AsyncStorage.multiGet(['route', 'CeVe', 'pass', 'isLogged','urlgs','usergs','passgs'])
+		// AsyncStorage.multiGet(['route', 'CeVe', 'pass', 'isLogged'])
+		.then((sesion) => {
+			console.log("AsyncStorage");
+			this.setState({isLogged: sesion[3][1] === 'true' ? 'false' : 'true'});
+			this.setState({urlgs: sesion[4][1]?sesion[4][1]:'http://192.168.2.210:7001/MarinaWS/json/pc/app/ruta_cliente/get?'});
+			this.setState({usergs: sesion[5][1]?sesion[5][1]:'SALES.FORCE'});
+			this.setState({passgs: sesion[6][1]?sesion[6][1]:'123qwe'});
+			console.log(sesion);
+			if(sesion[3][1] === 'true'){		
+				this.setState({route: sesion[0][1]});
+			    this.setState({CeVe: sesion[1][1]});
+		    	this.setState({password: sesion[2][1]});
+		    	this.setState({switchValue: true});
+		    	this.onLogin();
+			}
+		})
+	}
+
+	//VISTA//
 	 render(){
+	 	console.log(this.state.isLogged)
+
+	 	let ceves = this.state.ceves.map((ceves, i) => {return <Item label = {ceves} value = {ceves} key = {i}/>})
+
 		return(
-			<View style = {styles.container}>
-				<View style = {{flex:1, alignItems: 'center', justifyContent: 'space-around'}}>
-					<View style = {styles.title}>
-        				<Image style = {styles.logo} resizeMode = {Image.resizeMode.center} source={require('../src/images/grupobimbo.png')}/>
-	        			<View style = {{flex: 1, alignItems: 'stretch', justifyContent: 'center', marginLeft: 10}}>
-	        				<Text style = {{color: "#EF6C00", fontSize: 20, fontWeight: 'bold'}}>Registro</Text>
-	        				<Text style = {{color: "#EF6C00", fontSize: 30, fontWeight: 'bold'}}>Devolución</Text>
-	        			</View>
-	        		</View>
-	        		<View style = {{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-		        		<Text style = {{flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 'bold'}}>Centro de ventas:</Text>
-						<Picker style={styles.picker}
-							selectedValue={this.state.CeVe}
-		            		onValueChange={(ceve) => {this.setState({CeVe: ceve})}}>
-				            <Item label="Selecciona CeVe" value= "0"/>
-				            <Item label="78910" value="78910" />
-				            <Item label="13506" value="13506" />
-				            <Item label="36589" value="36589" />
-				            <Item label="98514" value="98514" />
-				            <Item label="78152" value="78152" />
-				            <Item label="98212" value="98212" />
-				            <Item label="39742" value="39742" />
-				            <Item label="98252" value="98252" />
-				        </Picker>
-			        </View>
-					<TextInput style = {styles.textInput}
+			<View style = {{flex: 1, justifyContent: 'center', backgroundColor: '#FFFFFF'}}>
+			{ this.state.isLogged == 'true' ?
+			<View style = {styles.page}>
+				<Header title = "Devolución"/>
+				<Image style = {styles.logo} resizeMode = {Image.resizeMode.center} source={require('../src/images/grupobimbo.png')}/>
+				<View style = {styles.container}>
+					<Picker style={styles.picker}
+						selectedValue={this.state.CeVe}
+	            		onValueChange={(ceve) => {this.setState({CeVe: ceve})}}>
+	            		{ceves}
+			        </Picker>
+			        <TextInput style = {styles.textInput}
 					 ref = "rte"
 					 keyboardType = 'numeric' 
-					 placeholder="Ruta" 
+					 placeholder="Ruta"
+					 placeholderTextColor = "gray" 
+					 underlineColorAndroid = "white"
 					 onChangeText={(text) => {
 	          			this.setState({route:text});
 	        		 }}
@@ -76,28 +127,53 @@ class LoginView extends Component{
 					secureTextEntry= {true}
 					autoCapitalize = "none" 
 					placeholder="Contraseña"
+					placeholderTextColor = "gray"
+					underlineColorAndroid = "white"
 					onChangeText={(text) => {
 	          			this.setState({password:text});
 	        		}}/>
-	        	</View>
-	        	<View  style = {{flexDirection: 'row', alignItems: 'center', justifyContent:'center', marginBottom: 20}}>
-		        	<Switch
-			          onValueChange={(value) => this.setState({falseSwitchIsOn: value})}
-			          style={{marginLeft: 25}}
-			          value={this.state.falseSwitchIsOn} />
-			        <Text style = {{flex: 1}}>Recuérdame</Text>
-			      	<TouchableHighlight style = {styles.buttonConfig} onPress={(this.onSettings.bind(this))}>
-			        	<Image resizeMode = {Image.resizeMode.contain} style = {styles.imageConfig} source={require('../src/images/settings.png')}/>
-			      	</TouchableHighlight>
-			    </View>
-
-				<TouchableHighlight style = {styles.button} onPress={this.onLogin.bind(this)}>
-		        	<Text style = {styles.buttonText}>Entrar</Text>
-		      	</TouchableHighlight>
+	        		<View style={styles.switch}>
+		        		<Switch
+				          onValueChange={(value) => this.setState({switchValue: value})}
+				          value={this.state.switchValue}/>
+				        <Text style={styles.switchText}>Recordar</Text>
+			        </View>
+					<TouchableHighlight style = {styles.goButton} onPress={this.onLogin.bind(this)}>
+						<Text style = {styles.goButtonText}>Ingresar</Text>
+					</TouchableHighlight>
+					<TouchableHighlight style = {[styles.goButton, styles.configButton]} onPress={(this.onSettings.bind(this))}>
+						<View style = {styles.configButtonView}>
+			        		<Icon name = "md-cog" size = {30} color = "#fff" />
+			        		<Text style = {[styles.goButtonText, styles.configButtonText]}>Configuración</Text>
+			        	</View>
+			      	</TouchableHighlight>  
+				</View>
+			</View>	:
+			<Image style = {styles.logo} resizeMode = {Image.resizeMode.contain} source={require('../src/images/grupobimboinicio.png')}/>
+			}
 			</View>
 		)
 	}
 
+	//*********************************//
+	renderIf(condition, content){
+		if(condition){
+			return content;
+		}else{
+			return null;
+		}
+	}
+	//*********************************//
+
+	setConfig(){
+		AsyncStorage.multiSet([
+  			['url', this.state.url?this.state.url:'http://192.168.2.210:7001/MarinaWS/json/pc/app/ruta_cliente/get?'],
+  			['usergs', this.state.user?this.state.user:'SALES.FORCE'],
+  			['passgs', this.state.pass?this.state.pass:'123qwe'],
+		]);
+	}
+
+	//FUNCIONALIDAD DE LOS BOTONES//
 	onLogin() {
 		console.log("onLogin")
 
@@ -108,23 +184,34 @@ class LoginView extends Component{
 		}else{
 			var data = 'ceve='+this.state.CeVe+'&FECHA=20160812&'+'RUTA='+this.state.route+'&'+'PASS='+this.state.password
 			console.log("data: "+data)
-			const URL = 'http://192.168.2.210:7001/MarinaWS/json/pc/app/ruta_cliente/get?' + data	
+			const URL = this.state.urlgs + data
+			// const URL = 'http://192.168.2.210:7001/MarinaWS/json/pc/app/ruta_cliente/get?' + data	
 			console.log("URL: "+URL);
 			console.log(base64.encode("SALES.FORCE:123qwe"));
+			console.log(base64.encode(this.state.usergs+":"+this.state.passgs));
 
 			let fetchData = {
 				method: 'GET',
 			    headers: {
-			    	'Authorization': "Basic U0FMRVMuRk9SQ0U6MTIzcXdl",
+			    	'Authorization': "Basic "+ base64.encode(this.state.usergs+":"+this.state.passgs),
+			    	// 'Authorization': "Basic U0FMRVMuRk9SQ0U6MTIzcXdl",
 					'Content-Type': 'application/json',
 			    },
 			}
 
 			fetch(URL, fetchData)
 			.then(function(response) {return response.json()})
-			.then((res) => {this.setState({dataSoruce: res}); console.log(this.state.dataSoruce);
+			.then((res) => {
 			  	if(res.success === true){
-			  		AsyncStorage.setItem('route', this.state.route);
+			  		// AsyncStorage.setItem('route', this.state.route);
+					this.setConfig();
+			  		this.setState({dataSoruce: res.resultadosConsulta[0].rows});
+			  		AsyncStorage.multiSet([
+			  			['route', this.state.route],
+			  			['CeVe', this.state.CeVe],
+			  			['pass', this.state.password],
+			  			['isLogged', this.state.switchValue ? 'true' : 'false']
+			  		]);		
 			  		this.props.navigator.replace({
 				  	  	title: 'ClientList',
 				  	  	name: 'ClientList',
@@ -151,46 +238,80 @@ class LoginView extends Component{
 }
 
 const styles = StyleSheet.create({
-	container: {
-	    flex: 1,
-	    alignItems: 'stretch',
-	    justifyContent: 'space-between',
+	page: {
+		flex: 1,
+		backgroundColor: '#FFFFFF',
+		justifyContent: 'center',
+		alignItems: 'stretch',
 	},
 	logo: {
-		flex:1, 
-        height: 90,
-    },
-    picker: {
-    	flex:1,
-    	marginRight: 30
-    },
-	textInput: {
-		width: 300,
+		height: '20%',
+		alignSelf: 'center',
 	},
-	buttonConfig: {
-		alignItems: 'flex-end',
-		justifyContent: 'flex-end',
+	container: {
+		flex: 1,
+		backgroundColor: '#EEEEEE',
+		alignItems: 'stretch',
+		justifyContent: 'space-between',
 	},
-	imageConfig: {
-		height: 40,
+	picker: {
+		marginHorizontal: '5%',
+		marginTop: '5%',
+		color: 'gray',
+		height: '10%',
+		backgroundColor: '#FFFFFF',
 	},
-	button: {
-		height: 40,
-		backgroundColor: '#0076B7',
-		justifyContent: 'center',
-		borderRadius: 1
+	textInput:{
+		height: 45,
+		fontSize: 15,
+		marginHorizontal: '5%',
+		color: 'gray',
+		backgroundColor: '#FFFFFF',
 	},
-	buttonText: {
-		color: 'white',
-		textAlign: 'center',
-		fontWeight: 'bold',
-		fontSize: 20,
-	},
-	title: {
+	switch:{
+		height: '10%',
 		flexDirection: 'row',
+		marginHorizontal: '5%',
+		justifyContent: 'flex-start',
+	},
+	switchText: {
+		flex: 1,
+		textAlignVertical: 'center',
+		fontSize: 15,
+		color: 'gray',
+	},
+	goButton: {
+		height: '12%',
+		borderRadius: 4,
+		marginHorizontal: '5%',
+		backgroundColor: '#FD9325',
+	},
+	goButtonText: {
+		flex: 1,
+		color: '#FFFFFF',
+		textAlign: 'center',
+		textAlignVertical: 'center',
+		fontSize: 20,
+		fontWeight: 'bold',
+	},
+	configButton: {
 		alignItems: 'center',
 		justifyContent: 'center',
-	}
+		backgroundColor: '#8C8C8C',
+		marginBottom: '5%',
+	},
+	configButtonView: {
+		flexDirection: 'row',
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	configButtonImage: {
+		height: '80%'
+	},
+	configButtonText: {
+		fontWeight: 'normal'
+	},
 });
 
 module.exports = LoginView;

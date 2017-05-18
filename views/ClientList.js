@@ -10,22 +10,37 @@ import {
 	StyleSheet, 
 	AsyncStorage, 
 	TouchableHighlight, 
-	ListView
+	ListView, 
+	Dimensions,
+	Animated,
+	Alert,
 } from 'react-native';
 
-var count = 0;//corresponde al número de clientes de la ruta 
+import Icon from 'react-native-vector-icons/Ionicons';
+
+var count = 0;//corresponde al número de clientes de la ruta
+import Header from '../src/components/Header' 
+import SideMenu from '../src/components/SideMenu' 
+const {width, height} = Dimensions.get('window')
 
 class ClientList extends Component{
 
 	constructor(props) {
 	    super(props);
 	    this.passProps = this.props.route.passProps
-		this.showClientList(this.passProps.data)
+	    console.log(this.passProps.data);
+	    const clientList = this.makeClientList(this.passProps.data)
+		this.showClientList(clientList)
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 	    this.state = {
 		    route: '',
 		    count: 0,
-		    dataSource: ds.cloneWithRows(this.passProps.data)
+		    dataSource: ds.cloneWithRows(clientList),
+
+		    isLoaded: false,
+            isOpenMenu: false,
+            translateX: new Animated.Value(width),
+            menuAnimation: new Animated.Value(0)
 		};
 	}
 
@@ -35,19 +50,76 @@ class ClientList extends Component{
 
 	_loadInitialState =  async () => {
 		var route = await AsyncStorage.getItem('route');
-		if (route !== null){
+		// AsyncStorage.multiGet(['route', 'dataSource'])
+		// AsyncStorage.multiGet(['route', 'dataSource', 'isLogged'])
+		// .then((data) => {
+		// 	// this.setState({route: data[0][1]});
+		// 	console.log(data);
+		// // 	// console.log(data[0][1]);
+		// // 	// console.log(data[1][1]);
+		//     this.setState({route: route});
+		// });
+		if (route !== null){		
 		    this.setState({route: route});
 		}
 	}
 
+	showMenu(){
+        if(this.state.isOpenMenu){
+            this.setState({isOpenMenu: false})
+                Animated.timing(
+                    this.state.translateX, {
+                        toValue: width
+                    }
+                ).start()
+        } else {
+            this.setState({isOpenMenu: true})
+            Animated.parallel([
+                Animated.timing(
+                    this.state.translateX, {
+                        toValue: width * 0.20
+                    }
+                ),
+                Animated.timing(
+                    this.state.menuAnimation, {
+                        toValue: 1,
+                        duration: 800
+                    }
+                )
+            ]).start()
+        }
+    }
+
+    closeMenu(){
+        this.setState({isOpenMenu: false})
+        Animated.parallel([
+            Animated.timing(
+                this.state.translateX, {
+                    toValue: width
+                }
+            ),
+            Animated.timing(
+                this.state.menuAnimation, {
+                    toValue: 0,
+                    duration: 300
+                }
+            )
+        ]).start()
+    }
+
 	//Renderiza la lista de clientes como un Botón, para poder mostrar detalles al tocar cada cliente
 	renderClient(client, rowId){
 		// console.log(client);
-	    return(
-	      <TouchableHighlight style = {{alignItems: 'stretch', borderTopWidth: .5, justifyContent: 'center', marginLeft:20, marginRight: 20}} onPress={() => this.onClientPressed(rowId, client)}>
-	      	<View style = {{flex: 1, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'stretch'}}>
-		        <Text style = {{flex:1, fontSize: 15, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, marginTop: 10}}>{client.CLICOD}</Text>
-		        <Text style = {{flex:2, fontSize: 15, fontWeight: 'bold', marginBottom: 10, marginTop: 10}}>{client.CLINOM}</Text>
+	    return(	
+	      <TouchableHighlight style = {styles.touchableClient} onPress = {() => this.onClientPressed(rowId, client)}>
+	      	<View style = {styles.clientDetail}>
+	      		<View style = {{flex: 1}}>
+			        <Text style = {styles.cliCod}>{client.CLICOD}</Text>
+			        <Text style = {styles.cliNom}>{client.CLINOM}</Text>
+		        </View>
+            <View style = {styles.statusVisited}>
+              <Icon name = "md-checkmark" size = {30} color = "#fff"/>
+            </View>
 		    </View>
 	      </TouchableHighlight>
 	    )
@@ -55,39 +127,81 @@ class ClientList extends Component{
 
 	//VISTA//
 	render (){
+		console.log(ClientList);
 		return(
-			<View style={styles.page}>
-				<View style = {{height: 70, flex: 1,}}>
-				<View style={styles.header}>
-					<TouchableHighlight onPress={(this.onExit.bind(this))} style = {{flex: 2, justifyContent: 'center', alignItems: 'flex-start'}}>
-						<View style = {{flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start'}}>
-		        			<Image style = {{height: 40, width: 40}}resizeMode = {Image.resizeMode.center} source={require('../src/images/exit.png')}/>
-							<Text style = {{flex: 1, color: '#FFFFFF', fontSize: 15, paddingTop: 10}}>Salir</Text>
-						</View>
-					</TouchableHighlight>
-        			<Image style = {styles.logo} resizeMode = {Image.resizeMode.center} source={require('../src/images/grupobimbo.png')}/>
+			<View style = {styles.page}>
+                <Animated.View
+                    style={{
+                        width: width,
+                        flex: 1,
+                        zIndex: 1,
+                        transform: [
+                            {
+                                perspective: 450
+                            },
+                            {
+                                translateX: this.state.translateX.interpolate({
+                                    inputRange: [0, width],
+                                    outputRange: [width, 0]
+                                })
+                            },
+                        ]
+                    }}
+                >
+
+                {this.state.isOpenMenu ? <Header title = "Clientes" onPress={this.closeMenu.bind(this)}/> : <Header title = "Clientes" onPress={this.showMenu.bind(this)}/>}
+				<View style = {styles.logoNRoute}>
+	    			<Image style = {styles.logo} resizeMode = {Image.resizeMode.contain} source={require('../src/images/grupobimbo.png')}/>
+	    			<View style = {styles.routeContainer}>
+	    				<Text style = {styles.routeText}>RUTA</Text>
+	    				<Text style = {[styles.routeText, styles.route]}>{this.state.route}</Text>
+	    			</View>
 				</View>
-				</View>
-				<Text style = {styles.text}>Lista de clientes</Text>
-				<View style = {styles.route}>
-	        		<Image style = {styles.imageRoute} resizeMode = {Image.resizeMode.contain} source={require('../src/images/route.png')}/>
-					<Text style = {styles.textRoute}>{this.state.route}</Text>
-				</View>
-				<View style = {{flexDirection: 'row', justifyContent: 'space-around', borderBottomWidth: 1.5, borderColor: '#0076B7', marginRight: 20, marginLeft: 20}}>
-			        <Text style={{flex: 1, color: "#0076B7", fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>ID</Text>
-			        <Text style={{flex: 2, color: "#0076B7", fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>Cliente</Text>
-			    </View>
+				<Text style = {styles.client}>Cliente</Text>
 				<ListView
 			        dataSource={this.state.dataSource}
 			        renderRow={(client, rowId) => this.renderClient(client, rowId)}
 			    />
-			    <View style = {{alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 40, paddingTop: 5}}>
-	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/currentView.png')}/>
-	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/views.png')}/>
-	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/views.png')}/>
+			    <View style = {styles.navState}>
+              <Icon name = "md-radio-button-on" size = {10} color = "#000" style = {styles.dot}/>
+              <Icon name = "md-radio-button-off" size = {10} color = "#000" style = {styles.dot}/>
+              <Icon name = "md-radio-button-off" size = {10} color = "#000" style = {styles.dot}/>
+              <Icon name = "md-radio-button-off" size = {10} color = "#000" style = {styles.dot}/>
 			    </View>
+			    </Animated.View>
+                <Animated.View
+                    style={{
+                        opacity: this.state.menuAnimation,
+                        position: 'absolute',
+                        width: '80%',
+                        left: 0,
+                        top: 0,
+                        height: '100%',
+                        backgroundColor: '#EEEEEE'
+                    }}
+                >
+                    <SideMenu navigator = {this.props.navigator}/>
+                </Animated.View>
 			</View>
 		);
+	}
+
+
+	makeClientList(data){
+		var clientList = [];
+
+		clientList[0] = {CLICOD: data[0].CLICOD , CLINOM: data[0].CLINOM, estatusVisita: data[0].estatusVisita}
+		
+		function checkClient(client){
+			return client;
+		}
+
+		for (client in data){
+			if( clientList.findIndex(checkClient) === -1){
+				clientList.push({CLICOD: client.CLICOD, CLINOM: client.CLINOM, estatusVisita: data[0].estatusVisita});
+			}
+		}
+		return clientList;
 	}
 
 	//Cuenta cuántos clientes falta por registar
@@ -95,35 +209,56 @@ class ClientList extends Component{
 		// console.log(data)
 		var i = 0;
 		count = data.length-1;
-		console.log(count);
 		for(i = 0; i<data.length; i++){
-			if(data[i].status === "visitado"){
+			console.log(data[i].estatusVisita)
+			if(data[i].estatusVisita === "1"){
 				data.splice(i, 1);
 				break;
 			}
+		}
+		if (data.length == 0){
+			Alert.alert("Registro terminado",
+				"Se ha completado el registro del día",
+				[
+					{text: 'Entendido'}
+				]
+			)
 		}
 	}
 
 	//Funcionalidad "Salir"
 	onExit(){
-		//Si el usuario selecciona "salir", se termina la sesión y es redireccionado al Login
+		// Si el usuario selecciona "salir", se termina la sesión y es redireccionado al Login
 		console.log("exit");
-		this.props.navigator.resetTo({
-			title: 'Login',
-			name: 'Login',
-			passProps: {}
-		});
+    // AsyncStorage.multiRemove(['route', 'CeVe', 'pass'])
+		// this.props.navigator.resetTo({
+		// 	title: 'Login',
+		// 	name: 'Login',
+		// 	passProps: {}
+		// });
+		Alert.alert("HAHA!", "El Botón funciona");
+	}
+
+	productList(client, data){
+
+		function checkClient(pdt){
+			return pdt.CLICOD == client.CLICOD;
+		}
+
+		return data.filter(checkClient);
 	}
 
 	//Funcionalidad al tocar cada cliente
 	onClientPressed(rowId, client){
-		// console.log("onClientPressed")
-	    // console.log(client);
+		console.log("onClientPressed")
+	 //    console.log(client);
+	 	var productList = this.productList(client, this.passProps.data);
+	 	console.log(productList)
 	    //Redirecciona al detalle del cliente
 	    this.props.navigator.replace({
 	      name: 'ClientDetail',
 	      title: 'ClientDetail',
-	      passProps: {clients: this.passProps.data}
+	      passProps: {clients: productList, count: count}
 	      // passProps: {clients: this.passProps.data, client: client, count: count}
 	    });
 	}
@@ -132,57 +267,80 @@ class ClientList extends Component{
 //*************HOJA DE ESTILOS***********
 const styles = StyleSheet.create({
 	page: {
-	    flex: 1,
-	    alignItems: 'stretch',
-	    justifyContent: 'space-between',
-	},
-	header:{ 
-		flex: 1, 
-		height: 5,
-		flexDirection: 'row',
-		alignItems: 'center',
+		flex: 1,
+		backgroundColor: '#FFFFFF',
 		justifyContent: 'center',
-		backgroundColor: '#0076B7',
+		alignItems: 'stretch',
+	},
+	logoNRoute: {
+		flexDirection: 'row',
+		height: '15%',
+		alignItems: 'center',
+		marginBottom: '10%'
 	},
 	logo: {
 		flex: 1,
-        height: 50,
-    },
-	text: {
-		fontSize: 25,
-		justifyContent: 'flex-start',
-		alignItems: 'center',
-		fontWeight: 'bold',
-		color: '#EF6C00',
-		marginLeft: 30,
-		marginTop: 20,
+		height: '60%',
+	},
+	routeContainer: {
+		flex: 1,
+		alignItems: 'stretch',
+		justifyContent: 'center',
+	},
+	routeText: {
+		flex: 1,
+		textAlign: 'center',
+		textAlignVertical: 'bottom',
+		color: 'gray',
+		fontSize: 15,
 	},
 	route: {
-		flexDirection: 'row',
-		justifyContent: 'flex-start',
-		alignItems: 'center',
-		marginBottom: 15,
-		marginLeft: 30,
-	},
-	imageRoute: {
-		height: 65,
-	},
-	textRoute: {
-		flex: 1,
-		color: "#000000",
 		fontSize: 25,
 		fontWeight: 'bold',
+		textAlignVertical: 'top',
 	},
-	separator: {
-	    flex: 1,
-	    backgroundColor: '#000000',
-	},
-	clientText: {
-		flex: 1,
-		margin: 20,
-		fontSize: 15,
+	client: {
+		fontSize: 25,
 		fontWeight: 'bold',
-	}
+		paddingLeft: '5%',
+		borderBottomWidth: 1.5,
+	},
+	navState: {
+		height: '1%',
+		alignItems: 'center', 
+		flexDirection: 'row', 
+		justifyContent: 'center',
+		marginBottom: '1%', 
+		marginTop: 5
+	},
+	dot: {
+		marginHorizontal: '2%'
+	},
+	touchableClient: {
+		borderBottomWidth: .5,
+	},
+	clientDetail: {
+		flex: 1,
+		flexDirection: 'row',
+		marginLeft: '5%'
+	},
+	cliCod: {
+		flex:1,
+		fontSize: 20,
+		fontWeight: 'bold',
+		marginTop: 10
+	},
+	cliNom: {
+		flex:2,
+		fontSize: 15,
+		marginBottom: 10
+	},
+	statusVisited: {
+		backgroundColor: '#00B200',
+    justifyContent: 'center',
+    alignItems: 'center',
+		width: '13%'
+	},
 });
 
 module.exports = ClientList;

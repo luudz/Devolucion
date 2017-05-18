@@ -18,6 +18,11 @@ import {
 	ScrollView, 
 } from 'react-native';
 
+import Icon from 'react-native-vector-icons/Ionicons';
+
+import SideMenu from '../src/components/SideMenu'
+import Header from '../src/components/Header' 
+
 // import dataSource from '../src/data/products'
 var total = 0;
 
@@ -33,7 +38,9 @@ class ClientDetail extends Component{
 		    route: '',
 		    dataSource: ds.cloneWithRows(this.passProps.clients),
 		    // dataSource: ds.cloneWithRows(this.passProps.client.products),
+		    refund: 0,
 		    total: 0,
+		    showSideMenu: false,
 	    };
   	}
 
@@ -53,73 +60,82 @@ class ClientDetail extends Component{
 	renderProductList(products, rowId){
 		console.log("renderProductList");
 	    return(
-	      	<View style = {{flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'stretch', borderTopWidth: 0.5}}>
-		        <Text style = {{flex:1, fontSize: 15, textAlign: 'center', marginTop: 5, marginBottom: 5}}>{products.codigo_producto}</Text>
-		        <Text style = {{flex:2, fontSize: 15, marginTop: 5, marginBottom: 5}}>{products.descr_producto}</Text>
-    				<TextInput style = {styles.textInput}  
-  						keyboardType = 'numeric'
-    					placeholder = '0' 
-    					onChangeText={(text) => this.saveRefund(products,text)}/>
-    				<TouchableHighlight style = {{justifyContent: 'center', alignItems: 'center', width: 40,}} onPress={() => this.onDelete(rowId,products)}>
-						<Image style = {styles.clientImage} resizeMode = {Image.resizeMode.center} source={require('../src/images/delete.png')}/>
-					</TouchableHighlight>
+	      	<View style = {styles.productContainer}>
+	      		<View style = {styles.productDetail}>
+			        <Text style = {styles.prodCod}>{products.codigo_producto}</Text>
+			        <Text style = {styles.prodDesc}>{products.descr_producto}</Text>
+			    </View>
+			    <TouchableHighlight onPress = {() => this.subtract(products)} style = {styles.quitButton}>
+					<Icon name = "md-remove" size = {30} color = "#fff" />
+				</TouchableHighlight>
+				<TextInput style = {styles.textInput}  
+					keyboardType = 'numeric'
+					placeholder = '0'
+					underlineColorAndroid = "white"
+					onChangeText={(refund) => {this.setState({refund:refund});}} 
+					onEndEditing={() => this.saveRefund(products,this.state.refund)}/>
+				<TouchableHighlight onPress = {() => this.add(products)} style = {[styles.quitButton, styles.addButton]}>
+					<Icon name = "md-add" size = {30} color = "#fff" />
+    			</TouchableHighlight>
 		    </View>
 	    )
 	}
+
+	//*********************************//
+	renderIf(condition, content){
+		if(condition){
+			return content;
+		}else{
+			return null;
+		}
+	}
+	//*********************************//
+
 
 	//VISTA//
 	render (){
 		// console.log("ClientDetail")
 		return(
-			<View style={styles.page}>
-				<View style={styles.header}>
-					<TouchableHighlight style = {{flex: 2, justifyContent: 'center', alignItems: 'flex-start'}} onPress={(this.onExit.bind(this))}>
-	        			<Image style = {{height: 40, width: 40}}resizeMode = {Image.resizeMode.center} source={require('../src/images/menu.png')}/>
-					</TouchableHighlight>
-        			<Image style = {styles.logo} resizeMode = {Image.resizeMode.center} source={require('../src/images/grupobimbo.png')}/>
+			<View style = {styles.page}>
+				<Header title = "Registro Devolución"/>
+				<View style = {styles.logoNRoute}>
+	    			<Image style = {styles.logo} resizeMode = {Image.resizeMode.contain} source={require('../src/images/grupobimbo.png')}/>
+	    			<View style = {styles.routeContainer}>
+	    				<Text style = {styles.routeText}>RUTA</Text>
+	    				<Text style = {[styles.routeText, styles.route]}>{this.state.route}</Text>
+	    			</View>
 				</View>
-				<Text style = {styles.textTitle}>Detalle Cliente</Text>
-				<View>
-					<View style = {styles.container}>
-		        		<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/person.png')}/>
-						<Text style = {styles.textContain} >{this.passProps.clients[0].CLINOM}</Text>
-					</View>
-					<View style = {styles.container}>
-						<Image style = {styles.imageContain} resizeMode = {Image.resizeMode.contain} source={require('../src/images/route.png')}/>
-						<Text style = {styles.textContain} >{this.state.route}</Text>
-					</View>
-				</View>
-				<View style = {styles.headerListView}>
-					<Text style={styles.textHeaderListView}>Código</Text>
-					<Text style={styles.textHeaderListView}>Producto</Text>
-					<Text style={{flex:2, fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: '#0076B7'}}>Devolución</Text>
-				</View>
-				<ScrollView>
-					<ListView 
+				<View style = {styles.clientContainer}>
+    				<Text style = {styles.routeText}>CLIENTE</Text>
+    				<Text style = {[styles.routeText, styles.route]}>{this.passProps.clients[0].CLINOM}</Text>
+    			</View>
+    			<Text style = {styles.product}>Productos</Text>
+    			<ScrollView>
+    			<ListView 
 				        dataSource={this.state.dataSource}
 				        renderRow={(products, rowId) => this.renderProductList(products, rowId)}
-				        renderSeparator={(rowId) => <View key={rowId} style={styles.separator} />}
 				    />
 				</ScrollView>
-				<TouchableHighlight style = {{alignItems: 'center',height: 40, justifyContent:'center'}} onPress={(this.onAdd.bind(this))}>
-					<Image resizeMode = {Image.resizeMode.center} source={require('../src/images/add.png')}/>
-				</TouchableHighlight>
-				<View style = {{flexDirection: 'row', justifyContent: 'center', alignItems: 'stretch', marginBottom:10}}>
-					<Text style = {styles.text}>Total $ </Text>
-					<Text style = {styles.text}>{this.state.total}</Text>
-				</View>
-				<View style = {{alignItems: 'center', flexDirection: 'row', justifyContent: 'center', paddingTop: 5}}>
-	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/views.png')}/>
-	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/currentView.png')}/>
-	        		<Image style = {{height: 10}} resizeMode = {Image.resizeMode.center} source={require('../src/images/views.png')}/>
-			    </View>
-				<TouchableHighlight style = {styles.button} onPress={(this.onContinue.bind(this))}>
-		        	<Text style = {styles.buttonText}>Continuar</Text>
+				<TouchableHighlight style = {styles.goButton} onPress={(this.onContinue.bind(this))}>
+		        	<Text style = {styles.goButtonText}>Guardar</Text>
 		      	</TouchableHighlight>
+				<View style = {styles.navState}>
+					<Icon name = "md-radio-button-off" size = {10} color = "#000" style = {styles.dot}/>
+					<Icon name = "md-radio-button-on" size = {10} color = "#000" style = {styles.dot}/>
+					<Icon name = "md-radio-button-off" size = {10} color = "#000" style = {styles.dot}/>
+					<Icon name = "md-radio-button-off" size = {10} color = "#000" style = {styles.dot}/>
+			    </View>
 			</View>
 		);
 	}
 
+	add(product){
+
+	}
+
+	subtract(product){
+
+	}
 	//Funcionalidad botón
 	onContinue(){
 		//Redirecciona al usuario a la pantalla de confirmación
@@ -134,24 +150,15 @@ class ClientDetail extends Component{
 	}
 
 	//Funcionalidad "Salir"
-	onExit(){
+	onMenu(){
 		//Si el usuario selecciona "salir", se termina la sesión y es redireccionado al Login
-		this.props.navigator.resetTo({
-			title: 'Login',
-			name: 'Login',
-			passProps: {}
-		});
+		// this.setState({showSideMenu: !this.state.showSideMenu})
+		Alert.alert (
+	  	  	"JASJIAD",
+	  	  	"blasdr "
+	  	  );
 	}
 
-	//Funcionalidad "Agregar producto"
-	onAdd(){
-  	  // Alert.alert ("Configuración");
-  	  this.props.navigator.push({
-  	  	title: 'AddProduct',
-  	  	name: 'AddProduct',
-  	  	passProps: {}
-  	  });  	
-  	}
 
   	makeDelete(rowID){
   	  // let newProductList = this.passProps.client.products.splice(rowID,1);
@@ -177,6 +184,15 @@ class ClientDetail extends Component{
   	}
 
   	saveRefund(product, refund){
+  		console.log("refund");
+  		if (refund === ""){
+  			console.log("vacío")
+  			refund = "0";
+  		}
+  		console.log(refund);
+  		if(product.devolucionPZ !== "0"){
+  			total -= parseFloat(product.precio_fresco) * parseFloat(product.devolucionPZ);
+  		}
 	  	product.devolucionPZ = refund
 	  	// product.refund = refund
 	  	total += parseFloat(product.precio_fresco) * parseFloat(product.devolucionPZ);
@@ -190,104 +206,113 @@ class ClientDetail extends Component{
 //*************HOJA DE ESTILOS***********
 const styles = StyleSheet.create({
 	page: {
-	    flex: 1,
-	    alignItems: 'stretch',
-	    justifyContent: 'space-between',
-	},
-	header:{
-		flexDirection: 'row',
-		alignItems: 'center',
+		flex: 1,
+		backgroundColor: '#FFFFFF',
 		justifyContent: 'center',
-		backgroundColor: '#0076B7',
-		height: 70,
+		alignItems: 'stretch',
+	},
+	logoNRoute: {
+		flexDirection: 'row',
+		height: '9%',
+		alignItems: 'center',
 	},
 	logo: {
 		flex: 1,
-        height: 50,
-    },
-	textTitle: {
-		fontSize: 25,
-		justifyContent: 'flex-start',
-		alignItems: 'center',
-		fontWeight: 'bold',
-		color: '#EF6C00',
-		marginLeft: 30,
+		height: '80%',
 	},
-	text: {
+	routeContainer: {
 		flex: 1,
-		color: "#000000",
-		fontSize: 20,
-		fontWeight: 'bold',
-		textAlign: 'center'
-	},
-	container: {
-		flexDirection: 'row',
-		marginBottom: 10,
-	},
-	imageContain: {
-		height: 30,
-	},
-	textContain: {
-		flex: 1,
-		color: "#000000",
-		fontSize: 15,
-		fontWeight: 'bold',
-	},
-	containerExit: {
-		flex: 1,
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'flex-end'
-	},
-	// textExit: {
-	// 	flex: 1,
-	// 	textAlign: 'right',
-	// 	fontSize: 20,
-	// },
-	imageExit: {
-		height: 40,
-	},
-	button: {
-		height: 40,
-		backgroundColor: '#0076B7',
-		justifyContent: 'center',
 		alignItems: 'stretch',
-		borderRadius: 1
 	},
-	buttonText: {
-		flex:1,
-		margin: 5,
-		color: 'white',
-		textAlign: 'center',
-		fontSize: 20,
+	clientContainer: {
+		height: '9%',
+		justifyContent: 'flex-start'
 	},
-	clientText: {
+	routeText: {
 		flex: 1,
-		fontSize: 15,
+		textAlign: 'right',
+		marginRight: '5%',
+		textAlignVertical: 'bottom',
+		color: 'gray',
+		fontSize: 12,
 	},
-	clientImage:{
-		height: 20,
-	},
-	textInput: {
-		fontSize: 15,
-		textAlign: 'center',
-		justifyContent: 'center',
-		flex: 1,
-	},
-	headerListView: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-		borderBottomWidth: 1.5,
-		borderColor: '#0076B7',
-	},
-	textHeaderListView: {
-		flex:1,
+	route: {
 		fontSize: 20,
-		color: '#0076B7',
 		fontWeight: 'bold',
+		textAlignVertical: 'top',
+	},
+	product: {
+		fontSize: 20,
+		fontWeight: 'bold',
+		marginTop: '5%',
+		paddingLeft: '5%',
+		borderBottomWidth: 1.5,
+	},
+	goButton: {
+		height: '8%',
+		borderRadius: 4,
+		marginHorizontal: '5%',
+		marginTop: '2%',
+		backgroundColor: '#FD9325',
+	},
+	goButtonText: {
+		flex: 1,
+		color: '#FFFFFF',
 		textAlign: 'center',
-  	},
+		textAlignVertical: 'center',
+		fontSize: 20,
+		fontWeight: 'bold',
+	},
+	navState: {
+		height: '1%',
+		alignItems: 'center', 
+		flexDirection: 'row', 
+		justifyContent: 'center',
+		marginBottom: '1%', 
+		marginTop: 5
+	},
+	dot: {
+		marginHorizontal: '2%',
+	},
+	productContainer: {
+		flex: 1,
+		height: '50%',
+		flexDirection: 'row',
+		borderBottomWidth: 0.5,
+		alignItems: 'center'
+	},
+	productDetail: {
+		width: '60%',
+		marginLeft: '5%',
+	},
+	prodCod: {
+		flex:1,
+		fontSize: 15,
+		fontWeight: 'bold',
+		marginTop: '3%',
+	},
+	prodDesc: {
+		flex:2,
+		fontSize: 10,
+		marginBottom: '3%'
+	},
+	quitButton: {
+		flex: 1,
+		height: '80%',
+		borderRadius: 3,
+		justifyContent: 'center',
+		backgroundColor: '#8C8C8C',
+		alignItems: 'center'
+	},
+	addButton: {
+		backgroundColor: '#FD9325',
+		marginRight: '1%',
+	},
+	textInput:{
+		fontSize: 15,
+		color: 'gray',
+		textAlign: 'center',
+	},
 });
 
 module.exports = ClientDetail;

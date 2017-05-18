@@ -11,6 +11,8 @@ import {
   Image,
 } from 'react-native';
 
+import Icon from 'react-native-vector-icons/Ionicons';
+
 var NavigatorMapper = {
   //Header en todas las vistas que permiten la opción de volver a la vista anterior
   LeftButton: function (route, navigator, index){ 
@@ -18,12 +20,12 @@ var NavigatorMapper = {
               return null;
             }
             return (
-              <TouchableHighlight onPress = {() => {
+              <TouchableHighlight style = {{alignItems: 'center', justifyContent: 'center', height: '100%'}} onPress = {() => {
                 if (index > 0){
                   navigator.pop();
                 }
               }}>
-                <Image resizeMode = {Image.resizeMode.contain} style = {{height: 30}} source={require('./src/images/arrowBack.png')}/>
+                <Icon name = "md-arrow-round-back" size = {30} color = "#fff" />
               </TouchableHighlight>
             ); 
   },
@@ -41,8 +43,7 @@ const ClientList = require ('./views/ClientList');
 const ClientDetail = require ('./views/ClientDetail');
 const Confirmation = require ('./views/Confirmation');
 const Success = require ('./views/Success');
-const Settings = require ('./src/menus/Settings');
-const AddProduct = require ('./src/menus/AddProduct');
+const Settings = require ('./src/components/Settings');
 
 
 export default class Devolucion extends Component {
@@ -62,8 +63,6 @@ export default class Devolucion extends Component {
         return(<Confirmation navigator = {navigator} route = {route}/>);
       case 'Success':
         return(<Success navigator = {navigator} route = {route}/>);
-      case 'AddProduct':
-        return(<AddProduct navigator = {navigator} route = {route}/>);
     }
   }
 
